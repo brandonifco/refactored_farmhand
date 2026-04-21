@@ -4,10 +4,10 @@ import '../models/crop.dart';
 import '../services/storage/crop_repository.dart';
 import 'config_provider.dart';
 
-// Provides the repository
+// Provides the repository instance
 final cropRepositoryProvider = Provider((ref) => CropRepository());
 
-// The main provider the UI listens to for the list of crops
+// The main provider for the Full Calendar (Alphabetical by default)
 final plantingProvider = AsyncNotifierProvider<PlantingNotifier, List<Crop>>(() {
   return PlantingNotifier();
 });
@@ -19,51 +19,72 @@ class PlantingNotifier extends AsyncNotifier<List<Crop>> {
     final config = await ref.watch(configProvider.future);
     final repo = ref.read(cropRepositoryProvider);
 
-    // 2. Load the raw crops and the user's saved selections
-    final rawCrops = await repo.loadRawCrops();
-    final selectedNames = await repo.getSelectedCropNames();
+    // 2. Load crops from Hive (handles seeding from JSON if Hive is empty)
+    final cropsFromStorage = await repo.getAllCrops();
 
     // 3. Parse the dates from the config
     final lastFrost = DateTime.parse(config.lastFrostDate);
     final firstFrost = DateTime.parse(config.firstFrostDate);
 
-    // 4. Map the raw data into calculated, state-aware models
-    return rawCrops.map((crop) {
-      final isSelected = selectedNames.contains(crop.name);
-      // Calculate dates and set the selection state
-      return crop
-          .withCalculatedDates(lastFrost, firstFrost)
-          .copyWith(isSelected: isSelected);
+    // 4. Map the stored data into calculated models
+    final list = cropsFromStorage.map((crop) {
+      return crop.withCalculatedDates(lastFrost, firstFrost);
     }).toList();
+
+    // 5. Default Sort: Alphabetical for the Full Calendar View
+    list.sort((a, b) => a.name.compareTo(b.name));
+
+    return list;
   }
 
-  // The UI calls this to check/uncheck a crop on the calendar
+  // The UI calls this to check/uncheck a crop
   Future<void> toggleCropSelection(String cropName, bool isSelected) async {
+    if (!state.hasValue) return;
+
     final repo = ref.read(cropRepositoryProvider);
-    
-    // 1. Get the current list of names
-    final selectedNames = await repo.getSelectedCropNames();
-    
-    // 2. Add or remove the name
-    if (isSelected && !selectedNames.contains(cropName)) {
-      selectedNames.add(cropName);
-    } else if (!isSelected) {
-      selectedNames.remove(cropName);
-    }
-    
-    // 3. Save to disk
-    await repo.saveSelectedCropNames(selectedNames);
-    
-    // 4. Update the in-memory state so the UI redraws instantly
-    if (state.hasValue) {
-      final currentCrops = state.value!;
-      state = AsyncValue.data([
-        for (final crop in currentCrops)
-          if (crop.name == cropName)
-            crop.copyWith(isSelected: isSelected)
-          else
-            crop
-      ]);
-    }
+    final currentCrops = state.value!;
+
+    // 1. Find the crop and update its state
+    final updatedCrops = currentCrops.map((crop) {
+      if (crop.name == cropName) {
+        final updatedCrop = crop.copyWith(isSelected: isSelected);
+        
+        // 2. Persist the individual change to Hive instantly
+        repo.updateCrop(updatedCrop);
+        
+        return updatedCrop;
+      }
+      return crop;
+    }).toList();
+
+    // 3. Update the in-memory state so the UI redraws
+    state = AsyncValue.data(updatedCrops);
   }
 }
+
+/// Specialized provider for the Dashboard.
+/// Watches [plantingProvider] and sorts by:
+/// 1. Selected crops first.
+/// 2. Chronological planting order (start date).
+final dashboardCropsProvider = Provider<AsyncValue<List<Crop>>>((ref) {
+  final cropsAsync = ref.watch(plantingProvider);
+
+  return cropsAsync.whenData((crops) {
+    // Create a copy to avoid mutating the base provider's list
+    final sortedList = List<Crop>.from(crops);
+
+    sortedList.sort((a, b) {
+      // Priority 1: Selection status
+      if (a.isSelected != b.isSelected) {
+        return a.isSelected ? -1 : 1;
+      }
+      
+      // Priority 2: Planting Order (Chronological)
+      if (a.start == null) return 1;
+      if (b.start == null) return -1;
+      return a.start!.compareTo(b.start!);
+    });
+
+    return sortedList;
+  });
+});

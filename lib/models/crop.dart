@@ -1,13 +1,38 @@
+import 'package:hive_ce/hive.dart'; // Add this
+
+part 'crop.g.dart'; // Add this
+
+@HiveType(typeId: 0)
+
 class Crop {
+@HiveField(0)
   final String name;
+
+  @HiveField(1)
   final String hardiness;
+
+  @HiveField(2)
   final int criticalTemp;
+
+  @HiveField(3)
   final String pivot; // 'spring' or 'fall'
+
+  @HiveField(4)
   final int relativeStart;
+
+  @HiveField(5)
   final int relativeEnd;
+
+  @HiveField(6)
   final int daysToHarvest;
+
+  @HiveField(7)
   final String method;
+
+  @HiveField(8)
   final String notes;
+
+  @HiveField(9)
   final bool isSelected;
   
   // Calculated fields

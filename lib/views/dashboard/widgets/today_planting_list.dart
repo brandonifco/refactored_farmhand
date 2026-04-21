@@ -8,18 +8,28 @@ class TodayPlantingList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final plantingState = ref.watch(plantingProvider);
-    final today = DateTime.now();
+    final plantingState = ref.watch(dashboardCropsProvider);
 
     return plantingState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Center(child: Text("Error loading crops: $err")),
       data: (allCrops) {
-        // Filter for active, selected crops
+        // Normalize today to the start of the day for accurate comparison
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+
         final activeCrops = allCrops.where((crop) {
-          if (!crop.isSelected || crop.start == null || crop.end == null) return false;
-          return (today.isAfter(crop.start!) || today.isAtSameMomentAs(crop.start!)) &&
-                 (today.isBefore(crop.end!) || today.isAtSameMomentAs(crop.end!));
+          // We only care about selected crops with valid dates
+          if (!crop.isSelected || crop.start == null || crop.end == null) {
+            return false;
+          }
+          // Check if today is within the window (inclusive)
+          final isAfterStart =
+              today.isAfter(crop.start!) || today.isAtSameMomentAs(crop.start!);
+          final isBeforeEnd =
+              today.isBefore(crop.end!) || today.isAtSameMomentAs(crop.end!);
+
+          return isAfterStart && isBeforeEnd;
         }).toList();
 
         if (activeCrops.isEmpty) {
@@ -42,7 +52,10 @@ class TodayPlantingList extends ConsumerWidget {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ListTile(
                 leading: const Icon(Icons.grass, color: Colors.green),
-                title: Text(crop.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                title: Text(
+                  crop.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: Text(crop.method),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {

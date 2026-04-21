@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/config_provider.dart';
 import '../../providers/weather_provider.dart';
+// Note: We use dashboardCropsProvider inside the sub-widgets (TodayPlantingList)
 import '../calendar/full_calendar_view.dart';
 import '../settings/settings_view.dart';
 import 'widgets/weather_summary_card.dart';
@@ -12,7 +13,7 @@ class PlantingDashboard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // We only need the config here to get the Farm Name for the AppBar
+    // Watch the config to get the Farm Name (e.g., your Bethel Township property name)
     final configState = ref.watch(configProvider);
     final farmName = configState.value?.farmName ?? "Loading...";
 
@@ -22,11 +23,11 @@ class PlantingDashboard extends ConsumerWidget {
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,
         actions: [
-          // Refreshing is now a single line of code triggering the provider
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh Weather',
             onPressed: () {
+              // Standard Riverpod refresh pattern
               ref.read(weatherProvider.notifier).refreshWeather();
             },
           ),
@@ -52,18 +53,18 @@ class PlantingDashboard extends ConsumerWidget {
           ),
         ],
       ),
-      body: const Column(
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          WeatherSummaryCard(),
-          Padding(
-            padding: EdgeInsets.all(16.0),
+          const WeatherSummaryCard(),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
             child: Text(
-              'Planting Now',
+              'Planting Priority', // Renamed to reflect the new sorting logic
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
           ),
-          Expanded(
+          const Expanded(
             child: TodayPlantingList(),
           ),
         ],
