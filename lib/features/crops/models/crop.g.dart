@@ -37,13 +37,14 @@ class CropAdapter extends TypeAdapter<Crop> {
           : (fields[15] as Map).cast<String, String>(),
       quantity: fields[16] == null ? 0 : (fields[16] as num).toInt(),
       isPlanted: fields[17] == null ? false : fields[17] as bool,
+      datePlanted: fields[18] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Crop obj) {
     writer
-      ..writeByte(18)
+      ..writeByte(19)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -79,7 +80,9 @@ class CropAdapter extends TypeAdapter<Crop> {
       ..writeByte(16)
       ..write(obj.quantity)
       ..writeByte(17)
-      ..write(obj.isPlanted);
+      ..write(obj.isPlanted)
+      ..writeByte(18)
+      ..write(obj.datePlanted);
   }
 
   @override

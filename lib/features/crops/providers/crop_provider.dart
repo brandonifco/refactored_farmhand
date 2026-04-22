@@ -66,20 +66,20 @@ class PlantingNotifier extends AsyncNotifier<List<Crop>> {
     final repo = ref.read(cropRepositoryProvider);
     final currentCrops = state.value!;
 
-    // 1. Find the crop and update its status
     final updatedCrops = currentCrops.map((crop) {
       if (crop.name == cropName) {
-        final updatedCrop = crop.copyWith(isPlanted: isPlanted);
+        // Automatically set the date to NOW if true, or NULL if unchecked
+        final updatedCrop = crop.copyWith(
+          isPlanted: isPlanted,
+          datePlanted: isPlanted ? DateTime.now() : null,
+        );
         
-        // 2. Persist the change to Hive
         repo.updateCrop(updatedCrop);
-        
         return updatedCrop;
       }
       return crop;
     }).toList();
 
-    // 3. Update the in-memory state
     state = AsyncValue.data(updatedCrops);
   }
   // The UI calls this to check/uncheck a crop

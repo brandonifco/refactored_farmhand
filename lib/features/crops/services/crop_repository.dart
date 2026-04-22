@@ -9,7 +9,7 @@ class CropRepository {
   final Box<Crop> _box = Hive.box<Crop>('crops_box');
 
   // FOOLPROOF VERSIONING: Increment this number when you change crops.json
-  static const int _currentSchemaVersion = 4; 
+  static const int _currentSchemaVersion = 5; 
   static const String _schemaKey = 'farm_data_schema_version';
 
   /// Loads the raw list of crops from the JSON asset and sanitizes types

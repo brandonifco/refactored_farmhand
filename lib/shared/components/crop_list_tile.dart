@@ -40,7 +40,7 @@ class CropListTile extends ConsumerWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           spacing: 8,
           children: [
-            // 1. Quantity Display (Only shows if quantity is set)
+            // 1. Quantity Display
             if (crop.quantity > 0)
               Text(
                 'Qty: ${crop.quantity}',
@@ -51,7 +51,18 @@ class CropListTile extends ConsumerWidget {
             if (crop.isPlanted)
               const Icon(Icons.check_circle, color: Colors.green, size: 20),
 
-            // 3. Existing Status Chip
+            // 3. NEW: Automated Date Display (MM/DD)
+            if (crop.isPlanted && crop.datePlanted != null)
+              Text(
+                '${crop.datePlanted!.month}/${crop.datePlanted!.day}',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+
+            // 4. Existing Status Chip
             Chip(
               label: Text(
                 status, 

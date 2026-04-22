@@ -26,6 +26,7 @@ class Crop {
   // NEW FIELDS
   @HiveField(16) final int quantity;
   @HiveField(17) final bool isPlanted;
+  @HiveField(18) final DateTime? datePlanted;
 
   // Calculated fields (Not stored in Hive)
   final DateTime? start;
@@ -52,6 +53,7 @@ class Crop {
     this.traits = const {},
     this.quantity = 0, // Default to 0
     this.isPlanted = false, // Default to false
+    this.datePlanted,
     this.start,
     this.end,
     this.harvestStart,
@@ -73,6 +75,7 @@ class Crop {
     Map<String, String>? traits,
     int? quantity,        // Added to copyWith
     bool? isPlanted,      // Added to copyWith
+    DateTime? datePlanted,
   }) {
     return Crop(
       name: name,
@@ -93,6 +96,7 @@ class Crop {
       traits: traits ?? this.traits,
       quantity: quantity ?? this.quantity,
       isPlanted: isPlanted ?? this.isPlanted,
+      datePlanted: datePlanted ?? this.datePlanted,
       start: start ?? this.start,
       end: end ?? this.end,
       harvestStart: harvestStart ?? this.harvestStart,
