@@ -20,32 +20,29 @@ class ConfigNotifier extends AsyncNotifier<FarmConfig> {
 
   // The UI calls this method to save new data
   Future<void> updateSettings({
-    required String name,
-    required String location,
-    required String zone,
-  }) async {
-    // 1. Set state to "loading" so the UI can show a spinner if it wants
-    state = const AsyncValue.loading();
+  required String name,
+  required String location,
+  required String zone,
+  required double lat,  // Add this
+  required double lon,  // Add this
+}) async {
+  state = const AsyncValue.loading();
 
-    // 2. Wrap the update in a guard to handle errors automatically
-    state = await AsyncValue.guard(() async {
-      // Look up the frost dates for the newly selected zone
-      final frostDates = await _configService.getFrostDatesForZone(zone);
-      
-      // Create the updated config object
-      final newConfig = FarmConfig(
-        farmName: name,
-        location: location,
-        hardinessZone: zone,
-        lastFrostDate: frostDates['lastFrost']!,
-        firstFrostDate: frostDates['firstFrost']!,
-      );
+  state = await AsyncValue.guard(() async {
+    final frostDates = await _configService.getFrostDatesForZone(zone);
+    
+    final newConfig = FarmConfig(
+      farmName: name,
+      location: location,
+      hardinessZone: zone,
+      lastFrostDate: frostDates['lastFrost']!,
+      firstFrostDate: frostDates['firstFrost']!,
+      lat: lat, // Add this
+      lon: lon, // Add this
+    );
 
-      // Save to disk
-      await _configService.saveConfig(newConfig);
-
-      // Return the new config, which automatically updates the UI
-      return newConfig;
-    });
-  }
+    await _configService.saveConfig(newConfig);
+    return newConfig;
+  });
+}
 }

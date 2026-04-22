@@ -3,5 +3,7 @@
     "location": "Bethel Township, OH",
     "hardinessZone": "6b",
     "lastFrostDate": "2026-05-10",
-    "firstFrostDate": "2026-10-15"
+    "firstFrostDate": "2026-10-15", 
+    "lat": "39.9614",
+    "lon": "-84.0624"
   }

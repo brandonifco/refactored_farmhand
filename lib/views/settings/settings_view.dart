@@ -62,22 +62,29 @@ class _SettingsViewState extends ConsumerState<SettingsView> {
   }
 
   // Saving is just passing the strings back to the central hub.
+// Saving is just passing the strings back to the central hub.
   Future<void> _handleSave() async {
+    // 1. Grab the existing config to get the current lat/lon
+    final currentConfig = ref.read(configProvider).value;
+
+    // 2. Pass everything to the notifier
     await ref.read(configProvider.notifier).updateSettings(
       name: _nameController.text,
       location: _locationController.text,
       zone: _selectedZone,
+      // Pass the existing coordinates so they aren't lost
+      // Fallback to Bethel Township defaults if config is null
+      lat: currentConfig?.lat ?? 39.9614,
+      lon: currentConfig?.lon ?? -84.0624,
     );
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Farm Configuration Saved!")),
       );
-      // Optional: Automatically return to the dashboard after saving
       Navigator.pop(context); 
     }
   }
-
   @override
   Widget build(BuildContext context) {
     // We can watch the configProvider. If it's in a "loading" state (because it's saving),
