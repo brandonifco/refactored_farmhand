@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'views/dashboard/planting_dashboard.dart';
-import 'utils/constants.dart';
+import 'features/dashboard/views/planting_dashboard.dart';
+import 'shared/utils/constants.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart'; // Add this
-import 'models/crop.dart';
+import 'features/crops/models/crop.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

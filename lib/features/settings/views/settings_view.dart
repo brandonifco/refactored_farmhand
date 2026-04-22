@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/config_provider.dart';
-import '../../providers/location_provider.dart';
+import '../providers/config_provider.dart';
+import '../providers/location_provider.dart';
 
 // Notice we change from StatefulWidget to ConsumerStatefulWidget
 // This allows the widget to interact with Riverpod's 'ref' object

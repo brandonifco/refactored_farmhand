@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/farm_config.dart';
-import '../services/storage/config_service.dart';
+import '../services/config_service.dart';
 
 // Create a global instance of the service
 final _configService = ConfigService();

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'package:http/http.dart' as http;
-import '../../models/weather.dart';
+import '../models/weather.dart';
 
 class WeatherApi {
   // Keeping your hardcoded Bethel Township coordinates for now

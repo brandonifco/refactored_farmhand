@@ -3,7 +3,7 @@ import 'dart:developer' as dev;
 import 'package:flutter/services.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Required for versioning
-import '../../models/crop.dart';
+import '../models/crop.dart';
 
 class CropRepository {
   final Box<Crop> _box = Hive.box<Crop>('crops_box');

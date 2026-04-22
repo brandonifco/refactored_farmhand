@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/weather.dart';
-import '../services/api/weather_api.dart';
+import '../services/weather_api.dart';
 
 // Global instance of our API client
 final _weatherApi = WeatherApi();

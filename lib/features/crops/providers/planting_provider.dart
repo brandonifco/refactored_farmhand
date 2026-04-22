@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/crop.dart';
-import '../services/storage/crop_repository.dart';
-import 'config_provider.dart';
+import '../services/crop_repository.dart';
+import '../../settings/providers/config_provider.dart';
 
 // Provides the repository instance
 final cropRepositoryProvider = Provider((ref) => CropRepository());

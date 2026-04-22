@@ -3,7 +3,7 @@
 // Check in to version control
 
 import 'package:hive_ce/hive_ce.dart';
-import 'package:planting_calendar_2/models/crop.dart';
+import 'package:planting_calendar_2/features/crops/models/crop.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {

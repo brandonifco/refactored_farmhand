@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/config_provider.dart';
-import '../../providers/weather_provider.dart';
+import '../../settings/providers/config_provider.dart';
+import '../../weather/providers/weather_provider.dart';
 // Note: We use dashboardCropsProvider inside the sub-widgets (TodayPlantingList)
-import '../calendar/full_calendar_view.dart';
-import '../settings/settings_view.dart';
-import 'widgets/weather_summary_card.dart';
-import 'widgets/today_planting_list.dart';
+import '../../crops/views/full_crops_list.dart';
+import '../../settings/views/settings_view.dart';
+import '../../weather/views/weather_summary_card.dart';
+import '../components/today_planting_list.dart';
 
 class PlantingDashboard extends ConsumerWidget {
   const PlantingDashboard({super.key});
@@ -32,12 +32,12 @@ class PlantingDashboard extends ConsumerWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.calendar_month),
-            tooltip: 'Full Calendar',
+            icon: const Icon(Icons.format_list_bulleted),
+            tooltip: 'Crops List',
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FullCalendarView()),
+                MaterialPageRoute(builder: (context) => const FullCropsList()),
               );
             },
           ),

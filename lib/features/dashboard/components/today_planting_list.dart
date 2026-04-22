@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../providers/planting_provider.dart';
-import '../../details/crop_detail_view.dart';
+import '../../crops/providers/planting_provider.dart';
+import '../../crops/views/crop_detail_view.dart';
 
 class TodayPlantingList extends ConsumerWidget {
   const TodayPlantingList({super.key});

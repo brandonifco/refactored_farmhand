@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../providers/weather_provider.dart';
-import '../../../providers/config_provider.dart';
+import '../providers/weather_provider.dart';
+import '../../settings/providers/config_provider.dart';
 
 class WeatherSummaryCard extends ConsumerWidget {
   const WeatherSummaryCard({super.key});
