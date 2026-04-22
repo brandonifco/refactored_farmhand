@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'package:http/http.dart' as http;
 import '../../models/weather.dart';
 
@@ -19,11 +20,11 @@ class WeatherApi {
         final data = json.decode(response.body);
         return Weather.fromJson(data);
       } else {
-        print("Weather API returned status: ${response.statusCode}");
+        dev.log("Weather API returned status: ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Weather Network Error: $e");
+      dev.log("Weather Network Error: $e");
       return null;
     }
   }

@@ -1,6 +1,6 @@
-import 'package:hive_ce/hive.dart'; // Add this
+import 'package:hive_ce/hive.dart';
 
-part 'crop.g.dart'; // Add this
+part 'crop.g.dart';
 
 @HiveType(typeId: 0)
 class Crop {
@@ -15,17 +15,15 @@ class Crop {
   @HiveField(8) final String notes;
   @HiveField(9) final bool isSelected;
 
-  // --- NEW: Management & Logic Fields ---
-  @HiveField(10) final String family;        // e.g., 'Nightshade', 'Brassica'
-  @HiveField(11) final int gddBase;          // e.g., 50 for warm, 40 for cool
-  @HiveField(12) final int waterIntensity;   // 1 (Drought tolerant) to 5 (Heavy)
-  @HiveField(13) final double spaceRequired; // Sq Ft per plant
-  @HiveField(14) final int successionDays;   // 0 if single crop, 7-21 for successions
-  
-  // A flexible map for regenerative "tags" (Companions, Nutrients, Sun)
+  // --- Management & Logic Fields ---
+  @HiveField(10) final String family;
+  @HiveField(11) final int gddBase;
+  @HiveField(12) final int waterIntensity;
+  @HiveField(13) final double spaceRequired;
+  @HiveField(14) final int successionDays;
   @HiveField(15) final Map<String, String> traits;
 
-  // Calculated fields
+  // Calculated fields (Not stored in Hive)
   final DateTime? start;
   final DateTime? end;
   final DateTime? harvestStart;
@@ -54,43 +52,19 @@ class Crop {
     this.harvestEnd,
   });
 
-  factory Crop.fromJson(Map<String, dynamic> json) {
-    return Crop(
-      name: json['name'],
-      hardiness: json['hardiness'] ?? 'Unknown',
-      criticalTemp: json['criticalTemp'] is int
-          ? json['criticalTemp']
-          : int.tryParse(json['criticalTemp'].toString()) ?? 32,
-      pivot: json['pivot'],
-      relativeStart: json['relativeStart'],
-      relativeEnd: json['relativeEnd'],
-      daysToHarvest: json['daysToHarvest'],
-      method: json['method'],
-      notes: json['notes'],
-    );
-  }
-
-  // Creates a new Crop with calculated dates based on the active config
-  Crop withCalculatedDates(DateTime lastFrost, DateTime firstFrost) {
-    DateTime anchor = (pivot == 'spring') ? lastFrost : firstFrost;
-    DateTime calcStart = anchor.add(Duration(days: relativeStart));
-    DateTime calcEnd = anchor.add(Duration(days: relativeEnd));
-
-    return copyWith(
-      start: calcStart,
-      end: calcEnd,
-      harvestStart: calcStart.add(Duration(days: daysToHarvest)),
-      harvestEnd: calcEnd.add(Duration(days: daysToHarvest)),
-    );
-  }
-
-  // Standard immutable update pattern
+  // Updated copyWith to prevent data loss during updates
   Crop copyWith({
     bool? isSelected,
     DateTime? start,
     DateTime? end,
     DateTime? harvestStart,
     DateTime? harvestEnd,
+    String? family,
+    int? gddBase,
+    int? waterIntensity,
+    double? spaceRequired,
+    int? successionDays,
+    Map<String, String>? traits,
   }) {
     return Crop(
       name: name,
@@ -103,10 +77,30 @@ class Crop {
       method: method,
       notes: notes,
       isSelected: isSelected ?? this.isSelected,
+      family: family ?? this.family,
+      gddBase: gddBase ?? this.gddBase,
+      waterIntensity: waterIntensity ?? this.waterIntensity,
+      spaceRequired: spaceRequired ?? this.spaceRequired,
+      successionDays: successionDays ?? this.successionDays,
+      traits: traits ?? this.traits,
       start: start ?? this.start,
       end: end ?? this.end,
       harvestStart: harvestStart ?? this.harvestStart,
       harvestEnd: harvestEnd ?? this.harvestEnd,
+    );
+  }
+
+  // Helper for date calculations
+  Crop withCalculatedDates(DateTime lastFrost, DateTime firstFrost) {
+    DateTime anchor = (pivot == 'spring') ? lastFrost : firstFrost;
+    DateTime calcStart = anchor.add(Duration(days: relativeStart));
+    DateTime calcEnd = anchor.add(Duration(days: relativeEnd));
+
+    return copyWith(
+      start: calcStart,
+      end: calcEnd,
+      harvestStart: calcStart.add(Duration(days: daysToHarvest)),
+      harvestEnd: calcEnd.add(Duration(days: daysToHarvest)),
     );
   }
 
