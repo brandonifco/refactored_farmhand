@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../settings/providers/config_provider.dart';
 import '../../weather/providers/weather_provider.dart';
 // Note: We use dashboardCropsProvider inside the sub-widgets (TodayPlantingList)
-import '../../crops/views/full_crops_list.dart';
+import '../../crops/views/crop_full_list.dart';
 import '../../settings/views/settings_view.dart';
 import '../../weather/views/weather_summary_card.dart';
 import '../components/today_planting_list.dart';

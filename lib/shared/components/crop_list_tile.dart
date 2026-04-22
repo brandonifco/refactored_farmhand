@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/crops/providers/planting_provider.dart';
+import '../../features/crops/providers/crop_provider.dart';
 import '../utils/theme_helper.dart';
 import '../../features/crops/views/crop_detail_view.dart';
 
@@ -36,16 +36,31 @@ class CropListTile extends ConsumerWidget {
         ),
         title: Text(crop.name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(windowText),
-        trailing: Chip(
-          label: Text(status, style: const TextStyle(color: Colors.white, fontSize: 12)),
-          backgroundColor: AppTheme.getStatusColor(status),
+        trailing: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          children: [
+            // 1. Quantity Display (Only shows if quantity is set)
+            if (crop.quantity > 0)
+              Text(
+                'Qty: ${crop.quantity}',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            
+            // 2. Planted Status Icon
+            if (crop.isPlanted)
+              const Icon(Icons.check_circle, color: Colors.green, size: 20),
+
+            // 3. Existing Status Chip
+            Chip(
+              label: Text(
+                status, 
+                style: const TextStyle(color: Colors.white, fontSize: 12)
+              ),
+              backgroundColor: AppTheme.getStatusColor(status),
+            ),
+          ],
         ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CropDetailView(crop: crop)),
-          );
-        },
       ),
     );
   }

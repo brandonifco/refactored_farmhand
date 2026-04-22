@@ -36,7 +36,52 @@ class PlantingNotifier extends AsyncNotifier<List<Crop>> {
 
     return list;
   }
+/// Updates the numerical quantity for a specific crop and persists to Hive
+  Future<void> updateCropQuantity(String cropName, int quantity) async {
+    if (!state.hasValue) return;
 
+    final repo = ref.read(cropRepositoryProvider);
+    final currentCrops = state.value!;
+
+    // 1. Find the crop and update its quantity
+    final updatedCrops = currentCrops.map((crop) {
+      if (crop.name == cropName) {
+        final updatedCrop = crop.copyWith(quantity: quantity);
+        
+        // 2. Persist the change to Hive
+        repo.updateCrop(updatedCrop);
+        
+        return updatedCrop;
+      }
+      return crop;
+    }).toList();
+
+    // 3. Update the in-memory state for UI reactivity
+    state = AsyncValue.data(updatedCrops);
+  }
+  /// Toggles the isPlanted status for a specific crop and persists to Hive
+  Future<void> togglePlantedStatus(String cropName, bool isPlanted) async {
+    if (!state.hasValue) return;
+
+    final repo = ref.read(cropRepositoryProvider);
+    final currentCrops = state.value!;
+
+    // 1. Find the crop and update its status
+    final updatedCrops = currentCrops.map((crop) {
+      if (crop.name == cropName) {
+        final updatedCrop = crop.copyWith(isPlanted: isPlanted);
+        
+        // 2. Persist the change to Hive
+        repo.updateCrop(updatedCrop);
+        
+        return updatedCrop;
+      }
+      return crop;
+    }).toList();
+
+    // 3. Update the in-memory state
+    state = AsyncValue.data(updatedCrops);
+  }
   // The UI calls this to check/uncheck a crop
   Future<void> toggleCropSelection(String cropName, bool isSelected) async {
     if (!state.hasValue) return;

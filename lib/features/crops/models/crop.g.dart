@@ -27,13 +27,23 @@ class CropAdapter extends TypeAdapter<Crop> {
       method: fields[7] as String,
       notes: fields[8] as String,
       isSelected: fields[9] == null ? false : fields[9] as bool,
+      family: fields[10] == null ? 'Unknown' : fields[10] as String,
+      gddBase: fields[11] == null ? 45 : (fields[11] as num).toInt(),
+      waterIntensity: fields[12] == null ? 3 : (fields[12] as num).toInt(),
+      spaceRequired: fields[13] == null ? 1.0 : (fields[13] as num).toDouble(),
+      successionDays: fields[14] == null ? 0 : (fields[14] as num).toInt(),
+      traits: fields[15] == null
+          ? const {}
+          : (fields[15] as Map).cast<String, String>(),
+      quantity: fields[16] == null ? 0 : (fields[16] as num).toInt(),
+      isPlanted: fields[17] == null ? false : fields[17] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Crop obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(18)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -53,7 +63,23 @@ class CropAdapter extends TypeAdapter<Crop> {
       ..writeByte(8)
       ..write(obj.notes)
       ..writeByte(9)
-      ..write(obj.isSelected);
+      ..write(obj.isSelected)
+      ..writeByte(10)
+      ..write(obj.family)
+      ..writeByte(11)
+      ..write(obj.gddBase)
+      ..writeByte(12)
+      ..write(obj.waterIntensity)
+      ..writeByte(13)
+      ..write(obj.spaceRequired)
+      ..writeByte(14)
+      ..write(obj.successionDays)
+      ..writeByte(15)
+      ..write(obj.traits)
+      ..writeByte(16)
+      ..write(obj.quantity)
+      ..writeByte(17)
+      ..write(obj.isPlanted);
   }
 
   @override

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/planting_provider.dart';
+import '../providers/crop_provider.dart';
 // Note: Extracted the Card into this new file
 import '../../../shared/components/crop_list_tile.dart'; 
 
