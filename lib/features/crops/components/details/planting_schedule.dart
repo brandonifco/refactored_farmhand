@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Add this for formatting
 import '../../models/crop.dart';
 import '../../../../../shared/components/detail_widgets.dart';
 
 class PlantingSchedule extends StatelessWidget {
   final Crop crop;
-  final String startDate;
-  final String endDate;
-  final String harvestRange;
 
   const PlantingSchedule({
     super.key,
     required this.crop,
-    required this.startDate,
-    required this.endDate,
-    required this.harvestRange,
   });
 
   @override
   Widget build(BuildContext context) {
+    // 1. Logic moved from the View to here
+    final String startDate = crop.start != null
+        ? DateFormat('MMM d').format(crop.start!)
+        : "TBD";
+    final String endDate = crop.end != null
+        ? DateFormat('MMM d').format(crop.end!)
+        : "TBD";
+    final String harvestRange =
+        (crop.harvestStart != null && crop.harvestEnd != null)
+        ? "${DateFormat('MMM d').format(crop.harvestStart!)} - ${DateFormat('MMM d').format(crop.harvestEnd!)}"
+        : "TBD";
+
     return Column(
       children: [
         DetailRow(

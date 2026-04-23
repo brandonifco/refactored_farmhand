@@ -105,6 +105,28 @@ class PlantingNotifier extends AsyncNotifier<List<Crop>> {
     // 3. Update the in-memory state so the UI redraws
     state = AsyncValue.data(updatedCrops);
   }
+  /// Manually overrides the planting date and ensures isPlanted is true
+  Future<void> updatePlantingDate(String cropName, DateTime date) async {
+    if (!state.hasValue) return;
+
+    final repo = ref.read(cropRepositoryProvider);
+    final currentCrops = state.value!;
+
+    final updatedCrops = currentCrops.map((crop) {
+      if (crop.name == cropName) {
+        final updatedCrop = crop.copyWith(
+          isPlanted: true,
+          datePlanted: date,
+        );
+        
+        repo.updateCrop(updatedCrop);
+        return updatedCrop;
+      }
+      return crop;
+    }).toList();
+
+    state = AsyncValue.data(updatedCrops);
+  }
 }
 
 /// Specialized provider for the Dashboard.

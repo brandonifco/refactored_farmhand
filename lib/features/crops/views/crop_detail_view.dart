@@ -1,31 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../models/crop.dart';
-import '../../../shared/utils/theme_helper.dart';
-import '../../../shared/components/detail_widgets.dart';
+// Components
+import '../components/details/crop_detail_header.dart';
+import '../components/details/frost_resilience_card.dart';
 import '../components/details/planting_schedule.dart';
+import '../components/details/crop_resources.dart';
+import '../components/details/crop_traits_tag_stack.dart';
+import '../components/details/crop_tips_card.dart';
 
 class CropDetailView extends StatelessWidget {
   final Crop crop;
-
   const CropDetailView({super.key, required this.crop});
 
   @override
   Widget build(BuildContext context) {
-    // Calculated date formatting
-    final String startDate = crop.start != null
-        ? DateFormat('MMM d').format(crop.start!)
-        : "TBD";
-    final String endDate = crop.end != null
-        ? DateFormat('MMM d').format(crop.end!)
-        : "TBD";
-    final String harvestRange =
-        (crop.harvestStart != null && crop.harvestEnd != null)
-        ? "${DateFormat('MMM d').format(crop.harvestStart!)} - ${DateFormat('MMM d').format(crop.harvestEnd!)}"
-        : "TBD";
-
-    final hardinessColor = AppTheme.getHardinessColor(crop.hardiness);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(crop.name),
@@ -37,128 +25,22 @@ class CropDetailView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Primary Identity Header (Family & Hardiness)
-            Row(
-              children: [
-                Expanded(
-                  child: HeaderStat(
-                    label: 'Family',
-                    value: crop.family,
-                    icon: Icons.category,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: HeaderStat(
-                    label: 'Succession',
-                    value: crop.successionDays > 0 ? '${crop.successionDays} Days' : 'Single',
-                    icon: Icons.repeat,
-                  ),
-                ),
-              ],
-            ),
+            CropDetailHeader(crop: crop),
             const SizedBox(height: 16),
-
-            // 2. Frost & Hardiness Card
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                leading: Icon(Icons.ac_unit, color: hardinessColor),
-                title: const Text('Frost Resilience', style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('${crop.hardiness.toUpperCase()} (Safe to ${crop.criticalTemp}°F)'),
-                trailing: Chip(
-                  label: Text(crop.hardiness, style: const TextStyle(fontSize: 10)),
-                  backgroundColor: hardinessColor.withValues(alpha: 0.1),
-                  side: BorderSide(color: hardinessColor),
-                ),
-              ),
-            ),
+            
+            FrostResilienceCard(crop: crop),
             const SizedBox(height: 10),
 
-            // 3. Scheduling & Method
-            PlantingSchedule(
-              crop: crop,
-              startDate: startDate,
-              endDate: endDate,
-              harvestRange: harvestRange,
-            ),
-
-            // 4. Resource & Space Intensity
-            Row(
-              children: [
-                Expanded(
-                  child: ResourceCard(
-                    title: 'Water',
-                    icon: Icons.water_drop,
-                    color: Colors.blue,
-                    content: 'Level ${crop.waterIntensity}/5',
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ResourceCard(
-                    title: 'Space',
-                    icon: Icons.square_foot,
-                    color: Colors.blueGrey,
-                    content: '${crop.spaceRequired} sq ft',
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ResourceCard(
-                    title: 'GDD Base',
-                    icon: Icons.thermostat,
-                    color: Colors.redAccent,
-                    content: '${crop.gddBase}°F',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // 5. Traits & Ecological Tags
-            if (crop.traits.isNotEmpty) ...[
-              const Text('Ecological Traits', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: crop.traits.entries.map((entry) {
-                  return Chip(
-                    label: Text('${entry.key}: ${entry.value}', style: const TextStyle(fontSize: 12)),
-                    backgroundColor: Colors.green[50],
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            // 6. Planting Tips
-            Card(
-              color: Colors.green[50],
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.lightbulb_outline, color: Colors.green),
-                        SizedBox(width: 10),
-                        Text('Planting Tips', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(crop.notes, style: const TextStyle(fontSize: 14, height: 1.4)),
-                  ],
-                ),
-              ),
-            ),
+            PlantingSchedule(crop: crop), // Pass crop directly, move logic inside!
+            
+            CropResources(crop: crop),
+            
+            CropTraitsTagStack(traits: crop.traits),
+            
+            CropTipsCard(notes: crop.notes),
           ],
         ),
       ),
     );
   }
 }
-
