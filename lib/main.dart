@@ -12,6 +12,8 @@ void main() async {
   Hive.registerAdapter(CropAdapter());
   
   await Hive.openBox<Crop>('crops_box');
+  // Add a new box for app configurations and settings
+  await Hive.openBox('settings_box'); 
 
   runApp(const ProviderScope(child: FarmApp()));
 }

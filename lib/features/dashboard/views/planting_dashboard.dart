@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../settings/providers/config_provider.dart';
 import '../../weather/providers/weather_provider.dart';
-// Note: We use dashboardCropsProvider inside the sub-widgets (TodayPlantingList)
 import '../../crops/views/crop_full_list.dart';
 import '../../settings/views/settings_view.dart';
 import '../../weather/views/weather_summary_card.dart';
+import '../../weather/views/rain_tabulator_card.dart'; // 1. Added import
 import '../components/today_planting_list.dart';
+import '../../weather/providers/rain_accumulation_provider.dart';
 
 class PlantingDashboard extends ConsumerWidget {
   const PlantingDashboard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the config to get the Farm Name (e.g., your Bethel Township property name)
+    // Watch the config to get the Farm Name
     final configState = ref.watch(configProvider);
     final farmName = configState.value?.farmName ?? "Loading...";
 
@@ -27,8 +28,11 @@ class PlantingDashboard extends ConsumerWidget {
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh Weather',
             onPressed: () {
-              // Standard Riverpod refresh pattern
               ref.read(weatherProvider.notifier).refreshWeather();
+              // Also refresh the rain tabulator when hitting the global refresh
+              ref.read(rainAccumulationProvider.notifier).updateStartDate(
+                ref.read(rainAccumulationProvider).value?.startDate ?? DateTime.now()
+              );
             },
           ),
           IconButton(
@@ -57,10 +61,11 @@ class PlantingDashboard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const WeatherSummaryCard(),
+          const RainTabulatorCard(), // 2. Inserted the new card here
           const Padding(
             padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
             child: Text(
-              'Planting Priority', // Renamed to reflect the new sorting logic
+              'Planting Priority', 
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
           ),
