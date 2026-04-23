@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/crops/providers/crop_provider.dart';
 import '../utils/theme_helper.dart';
-import '../../features/crops/views/crop_detail_view.dart';
 
 class CropListTile extends ConsumerWidget {
   final dynamic crop; // Replace 'dynamic' with your actual Crop model class
