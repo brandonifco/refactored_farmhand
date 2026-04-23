@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'dart:developer' as dev;
 
 class LocationService {
   /// Requests GPS coordinates and translates them into a "City, State" string.
@@ -45,7 +46,7 @@ class LocationService {
       
       return null;
     } catch (e) {
-      print("Location Error: $e");
+      dev.log("Location Error: $e");
       return null;
     }
   }

@@ -8,150 +8,119 @@ import '../../settings/providers/config_provider.dart';
 final cropRepositoryProvider = Provider((ref) => CropRepository());
 
 // The main provider for the Full Calendar (Alphabetical by default)
-final plantingProvider = AsyncNotifierProvider<PlantingNotifier, List<Crop>>(() {
-  return PlantingNotifier();
-});
+final plantingProvider = AsyncNotifierProvider<PlantingNotifier, List<Crop>>(
+  () {
+    return PlantingNotifier();
+  },
+);
 
 class PlantingNotifier extends AsyncNotifier<List<Crop>> {
   @override
   FutureOr<List<Crop>> build() async {
-    // 1. Wait for the configuration to load (gives us the active frost dates)
+    // 1. Wait for config and repository
     final config = await ref.watch(configProvider.future);
     final repo = ref.read(cropRepositoryProvider);
 
-    // 2. Load crops from Hive (handles seeding from JSON if Hive is empty)
+    // 2. Load raw data from Hive
     final cropsFromStorage = await repo.getAllCrops();
 
-    // 3. Parse the dates from the config
+    // 3. Logic Isolation: Move parsing and calculation into a single map operation
     final lastFrost = DateTime.parse(config.lastFrostDate);
     final firstFrost = DateTime.parse(config.firstFrostDate);
 
-    // 4. Map the stored data into calculated models
     final list = cropsFromStorage.map((crop) {
       return crop.withCalculatedDates(lastFrost, firstFrost);
     }).toList();
 
-    // 5. Default Sort: Alphabetical for the Full Calendar View
-    list.sort((a, b) => a.name.compareTo(b.name));
-
-    return list;
+    // 4. Isolation: Move sorting to a dedicated private helper
+    return _applyDefaultSort(list);
   }
-/// Updates the numerical quantity for a specific crop and persists to Hive
+
+  // Private helper to keep the build pipeline clean
+  List<Crop> _applyDefaultSort(List<Crop> list) {
+    return list..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  /// Logic Isolation: Centralized handler for state updates and persistence
+  Future<void> _updateCropState(
+    String cropName,
+    Crop Function(Crop) transform,
+  ) async {
+    if (!state.hasValue) return;
+
+    final repo = ref.read(cropRepositoryProvider);
+    final currentCrops = state.value!;
+
+    final updatedList = currentCrops.map((crop) {
+      if (crop.name == cropName) {
+        final updatedCrop = transform(crop);
+        repo.updateCrop(updatedCrop);
+        return updatedCrop;
+      }
+      return crop;
+    }).toList();
+
+    state = AsyncValue.data(updatedList);
+  }
+
   Future<void> updateCropQuantity(String cropName, int quantity) async {
-    if (!state.hasValue) return;
-
-    final repo = ref.read(cropRepositoryProvider);
-    final currentCrops = state.value!;
-
-    // 1. Find the crop and update its quantity
-    final updatedCrops = currentCrops.map((crop) {
-      if (crop.name == cropName) {
-        final updatedCrop = crop.copyWith(quantity: quantity);
-        
-        // 2. Persist the change to Hive
-        repo.updateCrop(updatedCrop);
-        
-        return updatedCrop;
-      }
-      return crop;
-    }).toList();
-
-    // 3. Update the in-memory state for UI reactivity
-    state = AsyncValue.data(updatedCrops);
+    await _updateCropState(
+      cropName,
+      (crop) => crop.copyWith(quantity: quantity),
+    );
   }
-  /// Toggles the isPlanted status for a specific crop and persists to Hive
+
   Future<void> togglePlantedStatus(String cropName, bool isPlanted) async {
-    if (!state.hasValue) return;
-
-    final repo = ref.read(cropRepositoryProvider);
-    final currentCrops = state.value!;
-
-    final updatedCrops = currentCrops.map((crop) {
-      if (crop.name == cropName) {
-        // Automatically set the date to NOW if true, or NULL if unchecked
-        final updatedCrop = crop.copyWith(
-          isPlanted: isPlanted,
-          datePlanted: isPlanted ? DateTime.now() : null,
-        );
-        
-        repo.updateCrop(updatedCrop);
-        return updatedCrop;
-      }
-      return crop;
-    }).toList();
-
-    state = AsyncValue.data(updatedCrops);
+    await _updateCropState(
+      cropName,
+      (crop) => crop.copyWith(
+        isPlanted: isPlanted,
+        datePlanted: isPlanted ? DateTime.now() : null,
+      ),
+    );
   }
-  // The UI calls this to check/uncheck a crop
-  Future<void> toggleCropSelection(String cropName, bool isSelected) async {
-    if (!state.hasValue) return;
 
-    final repo = ref.read(cropRepositoryProvider);
-    final currentCrops = state.value!;
-
-    // 1. Find the crop and update its state
-    final updatedCrops = currentCrops.map((crop) {
-      if (crop.name == cropName) {
-        final updatedCrop = crop.copyWith(isSelected: isSelected);
-        
-        // 2. Persist the individual change to Hive instantly
-        repo.updateCrop(updatedCrop);
-        
-        return updatedCrop;
-      }
-      return crop;
-    }).toList();
-
-    // 3. Update the in-memory state so the UI redraws
-    state = AsyncValue.data(updatedCrops);
-  }
-  /// Manually overrides the planting date and ensures isPlanted is true
   Future<void> updatePlantingDate(String cropName, DateTime date) async {
-    if (!state.hasValue) return;
-
-    final repo = ref.read(cropRepositoryProvider);
-    final currentCrops = state.value!;
-
-    final updatedCrops = currentCrops.map((crop) {
-      if (crop.name == cropName) {
-        final updatedCrop = crop.copyWith(
-          isPlanted: true,
-          datePlanted: date,
-        );
-        
-        repo.updateCrop(updatedCrop);
-        return updatedCrop;
-      }
-      return crop;
-    }).toList();
-
-    state = AsyncValue.data(updatedCrops);
+    await _updateCropState(
+      cropName,
+      (crop) => crop.copyWith(isPlanted: true, datePlanted: date),
+    );
   }
-}
+
+  Future<void> toggleCropSelection(String cropName, bool isSelected) async {
+    await _updateCropState(
+      cropName,
+      (crop) => crop.copyWith(isSelected: isSelected),
+    );
+  }
+} // <--- This is the end of the class
 
 /// Specialized provider for the Dashboard.
-/// Watches [plantingProvider] and sorts by:
-/// 1. Selected crops first.
-/// 2. Chronological planting order (start date).
 final dashboardCropsProvider = Provider<AsyncValue<List<Crop>>>((ref) {
   final cropsAsync = ref.watch(plantingProvider);
 
   return cropsAsync.whenData((crops) {
-    // Create a copy to avoid mutating the base provider's list
-    final sortedList = List<Crop>.from(crops);
-
-    sortedList.sort((a, b) {
-      // Priority 1: Selection status
-      if (a.isSelected != b.isSelected) {
-        return a.isSelected ? -1 : 1;
-      }
-      
-      // Priority 2: Planting Order (Chronological)
-      if (a.start == null) return 1;
-      if (b.start == null) return -1;
-      return a.start!.compareTo(b.start!);
-    });
-
-    return sortedList;
+    // Logic Isolation: The provider just watches data,
+    // the helper function handles the business rules.
+    return _sortCropsForDashboard(crops);
   });
 });
+
+/// Isolated Domain Logic: Defines how the Dashboard prioritizes crops
+List<Crop> _sortCropsForDashboard(List<Crop> crops) {
+  final sortedList = List<Crop>.from(crops);
+
+  sortedList.sort((a, b) {
+    // 1. Priority: Selection status
+    if (a.isSelected != b.isSelected) {
+      return a.isSelected ? -1 : 1;
+    }
+
+    // 2. Priority: Planting Order (Chronological)
+    if (a.start == null) return 1;
+    if (b.start == null) return -1;
+    return a.start!.compareTo(b.start!);
+  });
+
+  return sortedList;
+}
