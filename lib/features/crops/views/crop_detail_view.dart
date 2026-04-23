@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/crop.dart';
 import '../../../shared/utils/theme_helper.dart';
 import '../../../shared/components/detail_widgets.dart';
+import '../components/details/planting_schedule.dart';
 
 class CropDetailView extends StatelessWidget {
   final Crop crop;
@@ -76,28 +77,11 @@ class CropDetailView extends StatelessWidget {
             const SizedBox(height: 10),
 
             // 3. Scheduling & Method
-            DetailRow(
-              icon: Icons.calendar_today,
-              color: Colors.blue,
-              title: 'Planting Window',
-              value: '$startDate to $endDate',
-            ),
-            DetailRow(
-              icon: Icons.shopping_basket,
-              color: Colors.orange,
-              title: 'Estimated Harvest',
-              value: harvestRange,
-            ),
-            DetailRow(
-              icon: Icons.pan_tool,
-              color: Colors.brown,
-              title: 'Method',
-              value: crop.method,
-            ),
-            
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 4.0),
-              child: Text('Farm Management', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            PlantingSchedule(
+              crop: crop,
+              startDate: startDate,
+              endDate: endDate,
+              harvestRange: harvestRange,
             ),
 
             // 4. Resource & Space Intensity
